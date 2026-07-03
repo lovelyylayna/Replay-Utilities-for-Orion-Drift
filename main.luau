@@ -216,6 +216,7 @@ function onGui()
 	Gui.spacing()
 
 	if guiNotification.active then
+		Gui.textColored(LinearColor.new(1, 0, 0, 1), "Important!")
 		Gui.text(guiNotification.message)
 		Gui.spacing()
 		for i = 1, #guiNotification.actions do
@@ -234,111 +235,120 @@ function onGui()
 		return
 	end
 
-	if Gui.collapsingHeader("Details") then
-		Gui.text("Replays Loaded: " .. #Replay.listLoaded())
-	end
+	if Gui.beginTabBar("Tab") then
+		if Gui.beginTabItem("Overview") then
+			Gui.text("Replays Loaded: " .. #Replay.listLoaded())
 
-	if Gui.collapsingHeader("Settings") then
-		automaticallySyncReplayStates =
-			Gui.checkbox("Automatically sync replay play states?", automaticallySyncReplayStates)
-		Gui.setItemTooltip(
-			"Whether the script should forcefully sync each replays playing status to what the script expects (every frame.)"
-		)
+			Gui.separator()
+			Gui.spacing()
 
-		Gui.spacing()
+			newBallScaleMultiplier = Gui.sliderFloat("Ball Scale Multiplier", newBallScaleMultiplier, 0.3, 100)
+			Gui.setItemTooltip("Change how much the scale of the balls in the replay are multiplied by.")
+			spectatorDebug.replayBallScaleMultiplier = newBallScaleMultiplier
 
-		Gui.text("Time manipulation")
+			Gui.spacing()
 
-		config.timeManipEnabled = Gui.checkbox("Enable fast forward & rewind?", config.timeManipEnabled)
-		Gui.sameLine()
-		if Gui.button("Save##timeManipulation") then
-			saveConfig()
-		end
+			Gui.text("Replay spacing works best when using the same replays loaded multiple times.")
 
-		if config.timeManipEnabled then
-			fastForwardSeconds = Gui.sliderInt("Fast Forward by seconds", fastForwardSeconds, 1, 10000)
+			replaySpacingDifference =
+				Gui.sliderFloat("Replay spacing difference (seconds)", replaySpacingDifference, 0.1, 50)
 
-			rewindSeconds = Gui.sliderInt("Rewind by seconds", rewindSeconds, -1, -10000)
-		end
-	end
+			Gui.setItemTooltip(
+				"How much time should each replay be ahead of the last? (In seconds for those who want to do cool replay things like Rainsy :D)"
+			)
 
-	if Gui.collapsingHeader("Replay Actions") then
-		newBallScaleMultiplier = Gui.sliderFloat("Ball Scale Multiplier", newBallScaleMultiplier, 0.3, 100)
-		Gui.setItemTooltip("Change how much the scale of the balls in the replay are multiplied by.")
-		spectatorDebug.replayBallScaleMultiplier = newBallScaleMultiplier
-
-		Gui.spacing()
-
-		Gui.text("Replay spacing works best when using the same replays loaded multiple times.")
-
-		replaySpacingDifference =
-			Gui.sliderFloat("Replay spacing difference (seconds)", replaySpacingDifference, 0.1, 50)
-
-		Gui.setItemTooltip(
-			"How much time should each replay be ahead of the last? (In seconds for those who want to do cool replay things like Rainsy :D)"
-		)
-
-		if Gui.button("Space Replay Time") then
-			SpaceAllReplays()
-		end
-
-		Gui.spacing()
-
-		if Gui.button(if areGroupedPaused == true then "Pause all Replays" else "Unpause all Replays") then
-			ToggleAllReplaysPlaying()
-		end
-
-		if Gui.button("Reset all replays to beginning") then
-			ResetAllReplaysToBegin()
-		end
-
-		if Gui.button("Unload all Replays") then
-			UnloadAllReplays()
-		end
-	end
-
-	if Gui.collapsingHeader("Replay Callback") then
-		config.enableReplayCallback = Gui.checkbox("Enable Replay Callback?", config.enableReplayCallback)
-		Gui.sameLine()
-		if Gui.button("Save##replayCallbackEnabled") then
-			saveConfig()
-		end
-
-		if config.enableReplayCallback then
-			for replayName, data in pairs(replayCallbackCache) do
-				Gui.text(replayName .. " - " .. data.time_stamp)
+			if Gui.button("Space Replay Time") then
+				SpaceAllReplays()
 			end
 
 			Gui.spacing()
 
-			if Gui.button("Force Reload") then
-				UpdateReplayCache()
+			if Gui.button(if areGroupedPaused == true then "Pause all Replays" else "Unpause all Replays") then
+				ToggleAllReplaysPlaying()
 			end
+
+			if Gui.button("Reset all replays to beginning") then
+				ResetAllReplaysToBegin()
+			end
+
+			if Gui.button("Unload all Replays") then
+				UnloadAllReplays()
+			end
+
+			Gui.endTabItem()
+		end
+
+		if Gui.beginTabItem("Settings") then
+			automaticallySyncReplayStates =
+				Gui.checkbox("Automatically sync replay play states?", automaticallySyncReplayStates)
 			Gui.setItemTooltip(
-				"Use this button if the information above is not correct and a bit behind. Shouldn't happen but might?"
+				"Whether the script should forcefully sync each replays playing status to what the script expects (every frame.)"
 			)
 
-			Gui.sameLine()
+			Gui.spacing()
 
-			if Gui.button("Save cache") then
-				config.replayCallbackCache = replayCallbackCache
+			Gui.text("Time manipulation")
+
+			config.timeManipEnabled = Gui.checkbox("Enable fast forward & rewind?", config.timeManipEnabled)
+			Gui.sameLine()
+			if Gui.button("Save##timeManipulation") then
 				saveConfig()
 			end
-			Gui.setItemTooltip(
-				"This will save the replay cache. Which means you can pull your replay states back another time!"
-			)
 
-			Gui.sameLine()
+			if config.timeManipEnabled then
+				fastForwardSeconds = Gui.sliderInt("Fast Forward by seconds", fastForwardSeconds, 1, 10000)
 
-			if Gui.button("Load from save") then
-				ShowGUINotification(
-					"Are you sure? By loading from your last save, You will lose all current progress!",
-					{
-						{ "I'm sure!", LoadReplayCallbackCacheFromConfig },
-					}
-				)
+				rewindSeconds = Gui.sliderInt("Rewind by seconds", rewindSeconds, -1, -10000)
 			end
-			Gui.setItemTooltip("This will load your last saved replay cache from your storage!")
+			Gui.endTabItem()
 		end
+
+		if Gui.beginTabItem("Replay Callback") then
+			config.enableReplayCallback = Gui.checkbox("Enable Replay Callback?", config.enableReplayCallback)
+			Gui.sameLine()
+			if Gui.button("Save##replayCallbackEnabled") then
+				saveConfig()
+			end
+
+			if config.enableReplayCallback then
+				for replayName, data in pairs(replayCallbackCache) do
+					Gui.text(replayName .. " - " .. data.time_stamp)
+				end
+
+				Gui.spacing()
+
+				if Gui.button("Force Reload") then
+					UpdateReplayCache()
+				end
+				Gui.setItemTooltip(
+					"Use this button if the information above is not correct and a bit behind. Shouldn't happen but might?"
+				)
+
+				Gui.sameLine()
+
+				if Gui.button("Save cache") then
+					config.replayCallbackCache = replayCallbackCache
+					saveConfig()
+				end
+				Gui.setItemTooltip(
+					"This will save the replay cache. Which means you can pull your replay states back another time!"
+				)
+
+				Gui.sameLine()
+
+				if Gui.button("Load from save") then
+					ShowGUINotification(
+						"Are you sure? By loading from your last save, You will lose all current progress!",
+						{
+							{ "I'm sure!", LoadReplayCallbackCacheFromConfig },
+						}
+					)
+				end
+				Gui.setItemTooltip("This will load your last saved replay cache from your storage!")
+			end
+			Gui.endTabBar()
+		end
+
+		Gui.endTabBar()
 	end
 end
