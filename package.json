@@ -1,0 +1,13 @@
+{
+    "name": "lovelyylayna.replayutilities",
+    "displayName": "Layna's Bulk-Replay Utilities",
+    "version": "0.13",
+    "description": "The Replay Utilities script for Orion Drift! Made and maintained by LovelyyLayna",
+    "main": "main.luau",
+    "keywords": [
+        "replay"
+    ],
+    "author": "LovelyyLayna",
+    "defaultKeybind": "",
+    "url": "https://github.com/lovelyylayna/Replay-Utilities-for-Orion-Drift.git"
+}
